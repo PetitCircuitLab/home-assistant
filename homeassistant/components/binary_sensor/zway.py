@@ -17,14 +17,14 @@ SENSOR_TYPE_DOOR_WINDOW = 'door-window'
 
 
 def setup_platform(hass, config, add_devices, discovery_info=None):
-    """Set up Zway binary sensors."""
+    """Set up Z-way binary sensors."""
     if discovery_info is None:
         return
     add_devices(ZwayBinarySensor(hass, switch) for switch in discovery_info)
 
 
 class ZwayBinarySensor(ZwayEntity, BinarySensorDevice):
-    """Representation of a Tellstick switch."""
+    """Representation of a Z-Way binary sensor."""
 
     @property
     def is_on(self):
