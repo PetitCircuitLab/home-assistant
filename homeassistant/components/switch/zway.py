@@ -27,12 +27,12 @@ class ZwaySwitch(ZwayEntity, ToggleEntity):
         """Return true if switch is on."""
         return self.device.is_on
 
-    def turn_on(self):
+    def turn_on(self, **kwargs):
         """Turn the switch on."""
         self.device.turn_on()
         self.changed()
 
-    def turn_off(self):
+    def turn_off(self, **kwargs):
         """Turn the switch off."""
         self.device.turn_off()
         self.changed()
