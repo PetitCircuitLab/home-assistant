@@ -1,9 +1,14 @@
-from datetime import datetime, timedelta
+"""
+Support for Z-Way API.
+
+For more details about this component, please refer to the documentation at
+https://home-assistant.io/components/zway/
+"""
+from datetime import timedelta
 import logging
 
 from homeassistant.const import (
-    ATTR_BATTERY_LEVEL, DEVICE_DEFAULT_NAME, EVENT_HOMEASSISTANT_START,
-    CONF_URL, CONF_USERNAME, CONF_PASSWORD)
+    EVENT_HOMEASSISTANT_START, CONF_URL, CONF_USERNAME, CONF_PASSWORD)
 from homeassistant.helpers import discovery
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.entity import Entity
@@ -32,8 +37,9 @@ CONFIG_SCHEMA = vol.Schema({
     }),
 }, extra=vol.ALLOW_EXTRA)
 
-def setup(hass, config):
 
+def setup(hass, config):
+    """Set up the Z-Way component."""
     client = ZwayClient(hass, config)
 
     hass.data[DOMAIN] = client
@@ -44,8 +50,10 @@ def setup(hass, config):
 
 
 class ZwayClient(object):
-    def __init__(self, hass, config):
+    """Get the latest data and update the states."""
 
+    def __init__(self, hass, config):
+        """Initialize the Z-Way data object."""
         from petitzway import Controller
 
         username = config[DOMAIN].get(CONF_USERNAME)
@@ -57,55 +65,55 @@ class ZwayClient(object):
         self._interval = config[DOMAIN].get(CONF_UPDATE_INTERVAL)
         self._hass = hass
         self._config = config
-        self._client = Controller(baseurl=url, 
-                username=username, password=password)
+        self._client = Controller(baseurl=url,
+                                  username=username, password=password)
 
     def update(self, *args):
-        #print("--- Zway Client Update ---")
+        """Update local list of devices."""
         try:
             self._sync()
         finally:
-            track_point_in_utc_time(
-                    self._hass, self.update, utcnow() + self._interval)
+            track_point_in_utc_time(self._hass, self.update,
+                                    utcnow() + self._interval)
 
     def _sync(self):
-
+        """Update local list of devices."""
         if not self._client.update():
             _LOGGER.warning("Failed request")
 
         def discover(device_id, component):
-            discovery.load_platform(
-                        self._hass, component, DOMAIN, [device_id], self._config)
+            """Discover the component."""
+            discovery.load_platform(self._hass, component, DOMAIN,
+                                    [device_id], self._config)
 
         known_ids = {entity.device_id for entity in self.entities}
 
         for device in self._client.get_all_devices():
             if device.device_id in known_ids:
                 continue
-            #print(device.devicetype)
-            if device.devicetype=="switchBinary":
+            if device.devicetype == "switchBinary":
                 discover(device.device_id, 'switch')
-                #discovery.load_platform(
-                #        self._hass, 'switch', DOMAIN, [device.id], self._config)
-            if device.devicetype=="sensorMultilevel":
-                discover((device.device_id, device.probetype, device.metrics['scaleTitle']), 'sensor')
-                #discovery.load_platform(
-                #        self._hass, 'sensor', DOMAIN, [device.id], self._config)
-            if device.devicetype=="sensorBinary":
-                discover((device.device_id, device.probetype), 'binary_sensor')
-                #discovery.load_platform(
-                #        self._hass, 'binary_sensor', DOMAIN, [device.id], self._config)
+            if device.devicetype == "sensorMultilevel":
+                discover((device.device_id,
+                          device.probetype,
+                          device.metrics['scaleTitle']), 'sensor')
+            if device.devicetype == "sensorBinary":
+                discover((device.device_id,
+                          device.probetype), 'binary_sensor')
 
             for entity in self.entities:
                 entity.changed()
 
     def device(self, device_id):
+        """Return device representation."""
         return self._client.device(device_id)
 
 
 class ZwayEntity(Entity):
+    """Base class for all Z-Way entities."""
 
     def __init__(self, hass, device_id):
+        """Initialize the entity."""
         self._id = device_id
         self._client = hass.data[DOMAIN]
         self._name = self.device.title
@@ -124,12 +132,15 @@ class ZwayEntity(Entity):
 
     @property
     def name(self):
+        """Return name of device."""
         return self._name
 
     @property
     def device(self):
+        """Return the representaion of the device."""
         return self._client.device(self.device_id)
 
     @property
     def should_poll(self):
+        """Return the polling state."""
         return False

@@ -1,4 +1,8 @@
 """
+Support for Z-Way API.
+
+For more details about this platform, please refer to the documentation at
+https://home-assistant.io/components/sensor.zway/
 """
 import logging
 
@@ -30,16 +34,11 @@ class ZwaySensor(ZwayEntity):
     def state(self):
         """Return the value of the sensor."""
         level = None
-        if type(self.device.level) is float:
+        if isinstance(self.device.level, float):
             level = round(self.device.level, 1)
         else:
             level = self.device.level
         return level
-
-    #@property
-    #def unit_of_measurement(self):
-    #    """Return the unit of measurement."""
-    #    return self._id[2]
 
     @property
     def unit_of_measurement(self):
