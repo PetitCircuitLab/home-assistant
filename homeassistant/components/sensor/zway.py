@@ -21,14 +21,14 @@ SENSOR_TYPES = {
 
 
 def setup_platform(hass, config, add_devices, discovery_info=None):
-    """Set up Zway sensors."""
+    """Set up Z-way sensors."""
     if discovery_info is None:
         return
     add_devices(ZwaySensor(hass, switch) for switch in discovery_info)
 
 
 class ZwaySensor(ZwayEntity):
-    """Representation of a Zway sensor."""
+    """Representation of a Z-way sensor."""
 
     @property
     def state(self):

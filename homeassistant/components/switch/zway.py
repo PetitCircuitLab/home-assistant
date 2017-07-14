@@ -13,14 +13,14 @@ _LOGGER = logging.getLogger(__name__)
 
 
 def setup_platform(hass, config, add_devices, discovery_info=None):
-    """Set up Zway switches."""
+    """Set up Z-way switches."""
     if discovery_info is None:
         return
     add_devices(ZwaySwitch(hass, switch) for switch in discovery_info)
 
 
 class ZwaySwitch(ZwayEntity, ToggleEntity):
-    """Representation of a Tellstick switch."""
+    """Representation of a Z-Way switch."""
 
     @property
     def is_on(self):
